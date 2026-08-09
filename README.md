@@ -1,7 +1,7 @@
 # linearAlgebraLib
 A small and simple linear algebra headerfile which implements class 12 CBSE linear algebra operations in C
 ## Code Preview
-![](image.png)
+![](assets/codePreview.png)
 ## Supported Operations
 - Adjoint
 - Inverse
@@ -12,4 +12,4 @@ A small and simple linear algebra headerfile which implements class 12 CBSE line
 - Addition and Subtraction (WIP)
 ## Output Preview
 ### 3x3 Inversion
-![](3x3inversion.png)
+![](assets/3x3inversion.png)
