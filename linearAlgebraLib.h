@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 
 typedef struct Matrix2x2 {
   double M2x2[2][2];
@@ -12,10 +13,6 @@ typedef struct Vector3D {
   double V3D[3];
 } vector3d;
 
-typedef struct Array {
-  double A[9];
-} array;
-
 int invertNum (int num) {
   if (num == 1) {
     return 0;
@@ -23,14 +20,6 @@ int invertNum (int num) {
   else {
     return 1;
   }
-}
-
-int powClone(int base, int exponent) {
-  int result = 1;
-  for (int i = 0; i < exponent; i++) {
-    result = result * base;
-  }
-  return result;
 }
 
 matrix2x2 multiplyMatricies2x2(matrix2x2 *ptr1, matrix2x2 *ptr2) {
@@ -126,35 +115,27 @@ void printMatrix3x3(matrix3x3 *ptr) {
 double determinant2x2(matrix2x2 *ptr) {
   double result = 0;
   for (int j = 0; j < 2; j++) {
-    result = result + (powClone(-1, j))*(ptr->M2x2[0][j])*(ptr->M2x2[1][invertNum(j)]);
+    result = result + (pow(-1, j))*(ptr->M2x2[0][j])*(ptr->M2x2[1][invertNum(j)]);
   }
   return result;
 }
 
-array extractSubMatrices(matrix3x3 *ptr, int numberOfMatrices) {
-  array result;
+matrix3x3 extractSubMatrices(matrix3x3 *ptr, int numberOfMatrices) {
+  matrix3x3 result;
   for (int i = 0; i < numberOfMatrices / 3; i++) {
     for (int j = 0; j < 3; j++) {
       matrix2x2 tempMatrix;
-      double tempArray[4];
+      double *pTemp = (double *) tempMatrix.M2x2;
       int h = 0;
       for (int k = 0; k < 3; k++) {
         for (int l = 0; l < 3; l++) {
           if (k != i && l != j) {
-            tempArray[h] = ptr->M3x3[k][l];
+            pTemp[h] = ptr->M3x3[k][l];
             h++;
           }
         }
       }
-      for (int t = 0; t < 4; t++) {
-        if (t < 2) {
-          tempMatrix.M2x2[0][t] = tempArray[t];
-        }
-        else {
-          tempMatrix.M2x2[1][t - 2] = tempArray[t];
-        }
-      }
-      result.A[j + 3*i] = determinant2x2(&tempMatrix);
+      result.M3x3[i][j] = determinant2x2(&tempMatrix);
     }
   }
   return result;
@@ -162,9 +143,9 @@ array extractSubMatrices(matrix3x3 *ptr, int numberOfMatrices) {
 
 double determinant3x3(matrix3x3 *ptr) {
   int result = 0;
-  array R = extractSubMatrices(ptr,3);
+  matrix3x3 R = extractSubMatrices(ptr,3);
   for (int i = 0; i < 3; i++) {
-    result = ptr->M3x3[0][i]*powClone(-1,i)*(R.A[i]) + result;
+    result = ptr->M3x3[0][i] * pow(-1,i) * (R.M3x3[0][i]) + result;
   }
   return result;
 }
@@ -190,11 +171,10 @@ matrix3x3 transpose3x3(matrix3x3 *ptr) {
 }
 
 matrix3x3 adjoint3x3(matrix3x3 *ptr) {
-  matrix3x3 result;
-  array R = extractSubMatrices(ptr,9);
+  matrix3x3 result = extractSubMatrices(ptr,9);
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
-      result.M3x3[i][j] = powClone(-1, i + j)*R.A[j + 3*i];
+      result.M3x3[i][j] = pow(-1, i + j) * result.M3x3[i][j];
     }
   }
   return transpose3x3(&result);
@@ -208,9 +188,9 @@ vector3d crossProduct(vector3d *ptr1, vector3d *ptr2) {
     calcMatrix.M3x3[1][i] = ptr1->V3D[i];
     calcMatrix.M3x3[2][i] = ptr2->V3D[i];
   }
-  array R = extractSubMatrices(&calcMatrix,3);
+  matrix3x3 R = extractSubMatrices(&calcMatrix,3);
   for (int i = 0; i < 3; i++) {
-    result.V3D[i] = powClone(-1,i)*R.A[i];
+    result.V3D[i] = pow(-1,i)*R.M3x3[0][i];
   }
   return result;
 }
@@ -227,7 +207,7 @@ matrix3x3 invertMatrix3x3(matrix3x3 *ptr) {
   matrix3x3 result = { { {1,0,0}, {0,1,0}, {0,0,1} } };
   double det = determinant3x3(ptr);
   if (det == 0) {
-    printf("Matrix is not invertible");
+    printf("Matrix is not invertible\n");
     return result;
   }
   else {
